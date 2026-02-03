@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, WatchedItem, WatchlistItem } from '../lib/supabase';
-import { LogOut, Plus, Search, Trash2, CheckCircle, Clock, Film } from 'lucide-react';
+import { LogOut, Plus, Search, Trash2, CheckCircle, Clock, Film, X } from 'lucide-react';
 import SearchModal from './SearchModal';
 
 type Tab = 'watched' | 'watchlist';
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchType, setSearchType] = useState<'watched' | 'watchlist'>('watched');
+  const [selectedItem, setSelectedItem] = useState<WatchedItem | WatchlistItem | null>(null);
 
   useEffect(() => {
     loadData();
@@ -183,6 +184,7 @@ export default function Dashboard() {
                     key={item.id}
                     item={item}
                     onDelete={deleteWatchedItem}
+                    onClick={() => setSelectedItem(item)}
                     type="watched"
                   />
                 ))
@@ -192,6 +194,7 @@ export default function Dashboard() {
                     item={item}
                     onDelete={deleteWatchlistItem}
                     onMoveToWatched={moveToWatched}
+                    onClick={() => setSelectedItem(item)}
                     type="watchlist"
                   />
                 ))}
@@ -217,6 +220,13 @@ export default function Dashboard() {
           onAdd={handleAddMedia}
         />
       )}
+
+      {selectedItem && (
+        <DetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 }
@@ -225,13 +235,14 @@ interface MediaCardProps {
   item: WatchedItem | WatchlistItem;
   onDelete: (id: string) => void;
   onMoveToWatched?: (item: WatchlistItem) => void;
+  onClick: () => void;
   type: 'watched' | 'watchlist';
 }
 
-function MediaCard({ item, onDelete, onMoveToWatched, type }: MediaCardProps) {
+function MediaCard({ item, onDelete, onMoveToWatched, onClick, type }: MediaCardProps) {
   return (
-    <div className="group relative bg-slate-800/50 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition transform hover:scale-105">
-      <div className="aspect-[2/3] bg-slate-700">
+    <div className="group relative bg-slate-800/50 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition transform hover:scale-105 cursor-pointer">
+      <div className="aspect-[2/3] bg-slate-700" onClick={onClick}>
         {item.poster_url ? (
           <img
             src={item.poster_url}
@@ -274,6 +285,82 @@ function MediaCard({ item, onDelete, onMoveToWatched, type }: MediaCardProps) {
         >
           <Trash2 className="w-4 h-4 text-white" />
         </button>
+      </div>
+    </div>
+  );
+}
+
+interface DetailModalProps {
+  item: WatchedItem | WatchlistItem;
+  onClose: () => void;
+}
+
+function DetailModal({ item, onClose }: DetailModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
+        <div className="p-6 md:p-8">
+          <button
+            onClick={onClose}
+            className="float-right p-2 hover:bg-slate-700 rounded-lg transition"
+          >
+            <X className="w-6 h-6 text-slate-400" />
+          </button>
+
+          <div className="flex flex-col md:flex-row gap-6 mb-6 pt-4">
+            <div className="flex-shrink-0 w-40 h-56 bg-slate-700 rounded-lg overflow-hidden">
+              {item.poster_url ? (
+                <img
+                  src={item.poster_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Film className="w-16 h-16 text-slate-600" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold text-white mb-2">{item.title}</h2>
+
+              <div className="space-y-2 mb-6">
+                <p className="text-slate-300">
+                  <span className="font-semibold">Year:</span> {item.year || 'Unknown'}
+                </p>
+                <p className="text-slate-300">
+                  <span className="font-semibold">Type:</span> {item.media_type === 'tv' ? 'TV Show' : 'Movie'}
+                </p>
+
+                {item.media_type === 'tv' && item.total_episodes > 0 && (
+                  <>
+                    <p className="text-slate-300">
+                      <span className="font-semibold">Seasons:</span> {item.total_seasons}
+                    </p>
+                    <p className="text-slate-300">
+                      <span className="font-semibold">Episodes:</span> {item.total_episodes}
+                    </p>
+                  </>
+                )}
+
+                {'watched_at' in item && (
+                  <p className="text-slate-300">
+                    <span className="font-semibold">Watched:</span>{' '}
+                    {new Date(item.watched_at).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {item.description && (
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-3">Description</h3>
+              <p className="text-slate-300 leading-relaxed">{item.description}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

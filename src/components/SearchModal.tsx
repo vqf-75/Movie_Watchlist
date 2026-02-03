@@ -97,6 +97,7 @@ export default function SearchModal({ type, onClose, onAdd }: SearchModalProps) 
         total_episodes: totalEpisodes,
         total_seasons: totalSeasons,
         tmdb_id: result.id,
+        description: result.overview,
       };
 
       const table = type === 'watched' ? 'watched_items' : 'watchlist_items';

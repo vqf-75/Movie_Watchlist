@@ -19,6 +19,7 @@ export interface MediaItem {
   total_episodes: number;
   total_seasons: number;
   tmdb_id?: number;
+  description?: string;
   created_at: string;
 }
 
