@@ -20,6 +20,16 @@ export interface MediaItem {
   total_seasons: number;
   tmdb_id?: number;
   description?: string;
+  genres?: string;
+  rating?: number;
+  runtime?: number;
+  director?: string;
+  language?: string;
+  release_date?: string;
+  budget?: number;
+  revenue?: number;
+  main_cast?: string;
+  tv_status?: string;
   created_at: string;
 }
 

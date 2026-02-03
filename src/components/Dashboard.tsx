@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, WatchedItem, WatchlistItem } from '../lib/supabase';
-import { LogOut, Plus, Search, Trash2, CheckCircle, Clock, Film, X } from 'lucide-react';
+import { LogOut, Plus, Search, Trash2, CheckCircle, Clock, Film, X, Star, Users, Zap, DollarSign, Globe } from 'lucide-react';
 import SearchModal from './SearchModal';
 
 type Tab = 'watched' | 'watchlist';
@@ -296,9 +296,30 @@ interface DetailModalProps {
 }
 
 function DetailModal({ item, onClose }: DetailModalProps) {
+  const formatCurrency = (value: number | null | undefined) => {
+    if (!value) return 'N/A';
+    return `$${(value / 1000000).toFixed(1)}M`;
+  };
+
+  const formatLanguage = (lang: string | undefined) => {
+    const langNames: Record<string, string> = {
+      'EN': 'English',
+      'ES': 'Spanish',
+      'FR': 'French',
+      'DE': 'German',
+      'IT': 'Italian',
+      'PT': 'Portuguese',
+      'RU': 'Russian',
+      'JA': 'Japanese',
+      'KO': 'Korean',
+      'ZH': 'Chinese',
+    };
+    return langNames[lang || ''] || lang || 'Unknown';
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
+      <div className="bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
         <div className="p-6 md:p-8">
           <button
             onClick={onClose}
@@ -323,36 +344,137 @@ function DetailModal({ item, onClose }: DetailModalProps) {
             </div>
 
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-white mb-2">{item.title}</h2>
+              <h2 className="text-3xl font-bold text-white mb-1">{item.title}</h2>
+              {item.release_date && (
+                <p className="text-sm text-slate-400 mb-3">
+                  {new Date(item.release_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+              )}
 
-              <div className="space-y-2 mb-6">
-                <p className="text-slate-300">
-                  <span className="font-semibold">Year:</span> {item.year || 'Unknown'}
-                </p>
-                <p className="text-slate-300">
-                  <span className="font-semibold">Type:</span> {item.media_type === 'tv' ? 'TV Show' : 'Movie'}
-                </p>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <span>{item.media_type === 'tv' ? 'TV Show' : 'Movie'}</span>
+                </div>
+
+                {item.year && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    <span>{item.year}</span>
+                  </div>
+                )}
+
+                {item.rating && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span>{item.rating.toFixed(1)}/10</span>
+                  </div>
+                )}
+
+                {item.language && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Globe className="w-4 h-4 text-green-500" />
+                    <span>{formatLanguage(item.language)}</span>
+                  </div>
+                )}
+
+                {item.media_type === 'movie' && item.runtime && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    <span>{item.runtime} min</span>
+                  </div>
+                )}
+
+                {item.media_type === 'tv' && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <span>{item.total_seasons} {item.total_seasons === 1 ? 'Season' : 'Seasons'}</span>
+                  </div>
+                )}
 
                 {item.media_type === 'tv' && item.total_episodes > 0 && (
-                  <>
-                    <p className="text-slate-300">
-                      <span className="font-semibold">Seasons:</span> {item.total_seasons}
-                    </p>
-                    <p className="text-slate-300">
-                      <span className="font-semibold">Episodes:</span> {item.total_episodes}
-                    </p>
-                  </>
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Film className="w-4 h-4 text-blue-500" />
+                    <span>{item.total_episodes} Episodes</span>
+                  </div>
+                )}
+
+                {item.tv_status && (
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span>{item.tv_status}</span>
+                  </div>
                 )}
 
                 {'watched_at' in item && (
-                  <p className="text-slate-300">
-                    <span className="font-semibold">Watched:</span>{' '}
-                    {new Date(item.watched_at).toLocaleDateString()}
-                  </p>
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span>Watched on {new Date(item.watched_at).toLocaleDateString()}</span>
+                  </div>
                 )}
               </div>
             </div>
           </div>
+
+          {item.genres && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Genres</h3>
+              <div className="flex flex-wrap gap-2">
+                {item.genres.split(', ').map((genre) => (
+                  <span
+                    key={genre}
+                    className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 rounded-full text-sm"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {item.main_cast && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Cast
+              </h3>
+              <p className="text-slate-300 text-sm">{item.main_cast}</p>
+            </div>
+          )}
+
+          {item.director && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Director</h3>
+              <p className="text-slate-300 text-sm">{item.director}</p>
+            </div>
+          )}
+
+          {item.media_type === 'movie' && (item.budget || item.revenue) && (
+            <div className="mb-6 grid grid-cols-2 gap-4">
+              {item.budget ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Budget
+                  </h3>
+                  <p className="text-slate-300 text-sm">{formatCurrency(item.budget)}</p>
+                </div>
+              ) : null}
+              {item.revenue ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Revenue
+                  </h3>
+                  <p className="text-slate-300 text-sm">{formatCurrency(item.revenue)}</p>
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {item.description && (
             <div>

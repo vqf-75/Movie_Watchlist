@@ -66,25 +66,62 @@ export default function SearchModal({ type, onClose, onAdd }: SearchModalProps) 
     try {
       let totalEpisodes = 0;
       let totalSeasons = 0;
+      let genres = '';
+      let rating = null;
+      let runtime = null;
+      let director = '';
+      let language = '';
+      let releaseDate = '';
+      let budget = null;
+      let revenue = null;
+      let mainCast = '';
+      let tvStatus = '';
 
-      if (result.media_type === 'tv') {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-        const detailsResponse = await fetch(
-          `${supabaseUrl}/functions/v1/search-media?id=${result.id}&type=tv`,
-          {
-            headers: {
-              'Authorization': `Bearer ${supabaseAnonKey}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+      const detailsResponse = await fetch(
+        `${supabaseUrl}/functions/v1/search-media?id=${result.id}&type=${result.media_type}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-        if (detailsResponse.ok) {
-          const details = await detailsResponse.json();
+      if (detailsResponse.ok) {
+        const details = await detailsResponse.json();
+
+        if (result.media_type === 'tv') {
           totalEpisodes = details.total_episodes || 0;
           totalSeasons = details.total_seasons || 0;
+          tvStatus = details.status || '';
+        } else {
+          runtime = details.runtime || null;
+          budget = details.budget || null;
+          revenue = details.revenue || null;
+        }
+
+        genres = details.genres?.map((g: { name: string }) => g.name).join(', ') || '';
+        rating = details.vote_average || null;
+        language = details.original_language?.toUpperCase() || '';
+        releaseDate = details.release_date || details.first_air_date || '';
+
+        if (details.credits?.crew) {
+          const directors = details.credits.crew
+            .filter((p: { job: string }) => p.job === 'Director')
+            .map((p: { name: string }) => p.name)
+            .slice(0, 2)
+            .join(', ');
+          director = directors || '';
+        }
+
+        if (details.credits?.cast) {
+          mainCast = details.credits.cast
+            .slice(0, 5)
+            .map((p: { name: string }) => p.name)
+            .join(', ');
         }
       }
 
@@ -98,6 +135,16 @@ export default function SearchModal({ type, onClose, onAdd }: SearchModalProps) 
         total_seasons: totalSeasons,
         tmdb_id: result.id,
         description: result.overview,
+        genres,
+        rating,
+        runtime,
+        director,
+        language,
+        release_date: releaseDate,
+        budget,
+        revenue,
+        main_cast: mainCast,
+        tv_status: tvStatus,
       };
 
       const table = type === 'watched' ? 'watched_items' : 'watchlist_items';
