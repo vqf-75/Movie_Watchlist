@@ -79,7 +79,6 @@ export default function Dashboard() {
   };
 
   const handleAddMedia = () => {
-    setShowSearchModal(false);
     loadData();
   };
 

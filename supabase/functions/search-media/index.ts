@@ -15,11 +15,37 @@ interface SearchResult {
   first_air_date?: string;
   poster_path?: string;
   overview?: string;
+  vote_average?: number;
+  popularity?: number;
 }
 
 interface TVDetails {
+  id: number;
   number_of_episodes: number;
   number_of_seasons: number;
+  status?: string;
+  genres?: Array<{ id: number; name: string }>;
+  vote_average?: number;
+  original_language?: string;
+  credits?: {
+    cast?: Array<{ name: string }>;
+    crew?: Array<{ job: string; name: string }>;
+  };
+}
+
+interface MovieDetails {
+  id: number;
+  runtime?: number;
+  budget?: number;
+  revenue?: number;
+  genres?: Array<{ id: number; name: string }>;
+  vote_average?: number;
+  original_language?: string;
+  release_date?: string;
+  credits?: {
+    cast?: Array<{ name: string }>;
+    crew?: Array<{ job: string; name: string }>;
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -53,7 +79,7 @@ Deno.serve(async (req: Request) => {
     if (mediaId && mediaType) {
       if (mediaType === "tv") {
         const detailsResponse = await fetch(
-          `https://api.themoviedb.org/3/tv/${mediaId}?api_key=${tmdbApiKey}`
+          `https://api.themoviedb.org/3/tv/${mediaId}?api_key=${tmdbApiKey}&append_to_response=credits`
         );
 
         if (!detailsResponse.ok) {
@@ -66,16 +92,37 @@ Deno.serve(async (req: Request) => {
           JSON.stringify({
             total_episodes: details.number_of_episodes,
             total_seasons: details.number_of_seasons,
+            status: details.status,
+            genres: details.genres,
+            vote_average: details.vote_average,
+            original_language: details.original_language,
+            credits: details.credits,
           }),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       } else {
+        const detailsResponse = await fetch(
+          `https://api.themoviedb.org/3/movie/${mediaId}?api_key=${tmdbApiKey}&append_to_response=credits`
+        );
+
+        if (!detailsResponse.ok) {
+          throw new Error("Failed to fetch movie details");
+        }
+
+        const details: MovieDetails = await detailsResponse.json();
+
         return new Response(
           JSON.stringify({
-            total_episodes: 0,
-            total_seasons: 0,
+            runtime: details.runtime,
+            budget: details.budget,
+            revenue: details.revenue,
+            genres: details.genres,
+            vote_average: details.vote_average,
+            original_language: details.original_language,
+            release_date: details.release_date,
+            credits: details.credits,
           }),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
