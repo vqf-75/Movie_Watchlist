@@ -318,17 +318,19 @@ function DetailModal({ item, onClose }: DetailModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
-        <div className="p-6 md:p-8">
-          <button
-            onClick={onClose}
-            className="float-right p-2 hover:bg-slate-700 rounded-lg transition"
-          >
-            <X className="w-6 h-6 text-slate-400" />
-          </button>
+      <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
+        <div className="relative">
+          <div className="absolute top-4 right-4 z-10">
+            <button
+              onClick={onClose}
+              className="p-2 bg-slate-900/80 hover:bg-slate-800 rounded-lg transition backdrop-blur-sm"
+            >
+              <X className="w-6 h-6 text-slate-300" />
+            </button>
+          </div>
 
-          <div className="flex flex-col md:flex-row gap-6 mb-6 pt-4">
-            <div className="flex-shrink-0 w-40 h-56 bg-slate-700 rounded-lg overflow-hidden">
+          <div className="flex flex-col md:flex-row gap-6 p-6 md:p-8">
+            <div className="flex-shrink-0 w-48 h-64 bg-slate-700 rounded-xl overflow-hidden shadow-xl">
               {item.poster_url ? (
                 <img
                   src={item.poster_url}
@@ -337,150 +339,149 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Film className="w-16 h-16 text-slate-600" />
+                  <Film className="w-20 h-20 text-slate-600" />
                 </div>
               )}
             </div>
 
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-white mb-1">{item.title}</h2>
-              {item.release_date && (
-                <p className="text-sm text-slate-400 mb-3">
-                  {new Date(item.release_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              )}
+              <div className="mb-4">
+                <h2 className="text-4xl font-bold text-white mb-2">{item.title}</h2>
+                {item.release_date && (
+                  <p className="text-sm text-slate-400">
+                    {new Date(item.release_date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                )}
+              </div>
 
-              <div className="space-y-2 mb-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-6">
                 <div className="flex items-center gap-2 text-slate-300">
-                  <Zap className="w-4 h-4 text-yellow-500" />
-                  <span>{item.media_type === 'tv' ? 'TV Show' : 'Movie'}</span>
+                  <Zap className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                  <span className="text-sm">{item.media_type === 'tv' ? 'TV Show' : 'Movie'}</span>
                 </div>
 
                 {item.year && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span>{item.year}</span>
+                    <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-sm">{item.year}</span>
                   </div>
                 )}
 
                 {item.rating && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span>{item.rating.toFixed(1)}/10</span>
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{item.rating.toFixed(1)}/10</span>
                   </div>
                 )}
 
                 {item.language && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <Globe className="w-4 h-4 text-green-500" />
-                    <span>{formatLanguage(item.language)}</span>
+                    <Globe className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="text-sm">{formatLanguage(item.language)}</span>
                   </div>
                 )}
 
                 {item.media_type === 'movie' && item.runtime && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span>{item.runtime} min</span>
+                    <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-sm">{item.runtime} min</span>
                   </div>
                 )}
 
                 {item.media_type === 'tv' && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <Zap className="w-4 h-4 text-yellow-500" />
-                    <span>{item.total_seasons} {item.total_seasons === 1 ? 'Season' : 'Seasons'}</span>
-                  </div>
-                )}
-
-                {item.media_type === 'tv' && item.total_episodes > 0 && (
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Film className="w-4 h-4 text-blue-500" />
-                    <span>{item.total_episodes} Episodes</span>
+                    <Film className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-sm">{item.total_seasons} {item.total_seasons === 1 ? 'Season' : 'Seasons'}, {item.total_episodes} Episodes</span>
                   </div>
                 )}
 
                 {item.tv_status && (
                   <div className="flex items-center gap-2 text-slate-300">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>{item.tv_status}</span>
+                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="text-sm">{item.tv_status}</span>
                   </div>
                 )}
 
                 {'watched_at' in item && (
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Watched on {new Date(item.watched_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2 text-green-400">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm">Watched {new Date(item.watched_at).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
+
+              {item.genres && (
+                <div className="mb-4">
+                  <div className="flex flex-wrap gap-2">
+                    {item.genres.split(', ').map((genre) => (
+                      <span
+                        key={genre}
+                        className="px-3 py-1 bg-blue-600/30 border border-blue-500/60 text-blue-200 rounded-full text-xs font-medium"
+                      >
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {item.genres && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Genres</h3>
-              <div className="flex flex-wrap gap-2">
-                {item.genres.split(', ').map((genre) => (
-                  <span
-                    key={genre}
-                    className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 text-blue-300 rounded-full text-sm"
-                  >
-                    {genre}
-                  </span>
-                ))}
+          <div className="border-t border-slate-700/50 px-6 md:px-8 py-6 space-y-6">
+            {item.description && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Synopsis
+                </h3>
+                <p className="text-slate-300 leading-relaxed text-sm md:text-base">{item.description}</p>
               </div>
-            </div>
-          )}
+            )}
 
-          {item.main_cast && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Cast
-              </h3>
-              <p className="text-slate-300 text-sm">{item.main_cast}</p>
-            </div>
-          )}
+            {item.director && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-400 mb-2 uppercase tracking-wider">Director</h3>
+                <p className="text-slate-200 text-sm">{item.director}</p>
+              </div>
+            )}
 
-          {item.director && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Director</h3>
-              <p className="text-slate-300 text-sm">{item.director}</p>
-            </div>
-          )}
+            {item.main_cast && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Cast & Crew
+                </h3>
+                <p className="text-slate-200 text-sm leading-relaxed">{item.main_cast}</p>
+              </div>
+            )}
 
-          {item.media_type === 'movie' && (item.budget || item.revenue) && (
-            <div className="mb-6 grid grid-cols-2 gap-4">
-              {item.budget ? (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Budget
-                  </h3>
-                  <p className="text-slate-300 text-sm">{formatCurrency(item.budget)}</p>
-                </div>
-              ) : null}
-              {item.revenue ? (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Revenue
-                  </h3>
-                  <p className="text-slate-300 text-sm">{formatCurrency(item.revenue)}</p>
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {item.description && (
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3">Description</h3>
-              <p className="text-slate-300 leading-relaxed">{item.description}</p>
-            </div>
-          )}
+            {item.media_type === 'movie' && (item.budget || item.revenue) && (
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                {item.budget ? (
+                  <div className="bg-slate-700/40 rounded-lg p-4 border border-slate-600/50">
+                    <h3 className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider flex items-center gap-2">
+                      <DollarSign className="w-3 h-3" />
+                      Budget
+                    </h3>
+                    <p className="text-slate-200 font-semibold">{formatCurrency(item.budget)}</p>
+                  </div>
+                ) : null}
+                {item.revenue ? (
+                  <div className="bg-slate-700/40 rounded-lg p-4 border border-slate-600/50">
+                    <h3 className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider flex items-center gap-2">
+                      <DollarSign className="w-3 h-3" />
+                      Revenue
+                    </h3>
+                    <p className="text-slate-200 font-semibold">{formatCurrency(item.revenue)}</p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
